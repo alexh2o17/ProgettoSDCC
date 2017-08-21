@@ -33,9 +33,8 @@ class MyApp(App):
         return container
 
 
-
     # listener function
-    def on_button_pressed(self, widget):
+    def on_button_pressed(self, container):
         payload = {'user': self.name.get_value(), 'pass': self.pwd.get_value()}
         print payload
         payload_len = len(payload)
@@ -43,6 +42,16 @@ class MyApp(App):
         r = requests.post('http://localhost:8080', json=payload, headers=headers)
         print r.headers
         self.lbl.set_text('Asensio 1-4!')
+        self.create= gui.Button('Play')
+        self.create.set_on_click_listener(self.on_create_pressed)
+        container.append(self.create)
+
+    def on_create_pressed(self, widget):
+        payload={'user': 'alex'}
+        print payload
+        headers = {'content_length': 'payload_len', 'content-type': 'application/json', 'Connection': 'close'}
+        r = requests.put('http://localhost:8080', json=payload, headers=headers)
+        print r.headers
 
 # starts the webserver
 start(MyApp, standalone="true")

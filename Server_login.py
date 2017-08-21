@@ -49,6 +49,17 @@ class MyHandler(BaseHTTPRequestHandler):
         print 'Risposta partita'
         self.end_headers()
 
+    def do_PUT(self):
+        print 'Add Waiting Room'
+        content_len = int(self.headers.getheader('content-length', 0))
+        put_body = self.rfile.read(content_len)
+        gamers.append(['cis','cia'])
+        gamers.append(['nico','asads'])
+        self.send_response(200)
+        print gamers
+        print put_body
+        self.end_headers()
+
     def do_AUTHHEAD(self):
         print "send header"
         self.send_response(401)
@@ -61,6 +72,9 @@ def main():
     host = 'localhost'
     port_number = 8080
     print time.asctime(), "Server Starts - %s:%s" % (host, port_number)
+
+    global gamers
+    gamers=[]
 
     #try:
     server = HTTPServer(('localhost', port_number), MyHandler)
