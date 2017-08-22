@@ -42,14 +42,26 @@ class MyApp(App):
         r = requests.post('http://localhost:8080', json=payload, headers=headers)
         print r.headers
         self.lbl.set_text('Asensio 1-4!')
-        self.create= gui.Button('Play')
+        self.create = gui.Button('Play')
         self.create.set_on_click_listener(self.on_create_pressed)
-        container.append(self.create)
+        print r.status_code
+        if r.status_code == 200:
+            print 'Prepara la nuova pagina per il client'
+        else:
+            print 'Reinserisci le credenziali di accesso'
+        # container.append(self.create)
+        # # x = False
+        # # while x is False:
+        # response = self.rfile.read()
+        # #     if response == ("false" or 'true'):
+        # #         x = True
+        # print response
 
     def on_create_pressed(self, widget):
         payload={'user': 'alex'}
+        payload_len = len(payload)
         print payload
-        headers = {'content_length': 'payload_len', 'content-type': 'application/json', 'Connection': 'close'}
+        headers = {'content_length': payload_len, 'content-type': 'application/json', 'Connection': 'close'}
         r = requests.put('http://localhost:8080', json=payload, headers=headers)
         print r.headers
 

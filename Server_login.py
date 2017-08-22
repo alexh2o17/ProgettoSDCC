@@ -1,5 +1,8 @@
+import pprint
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import time
+import pymongo
+from pymongo import MongoClient
 import SocketServer
 import socket
 import ssl
@@ -41,13 +44,24 @@ class MyHandler(BaseHTTPRequestHandler):
         content_len = int(self.headers.getheader('content-length', 0))
         post_body = self.rfile.read(content_len)
         print post_body
-        # sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # server_address = ('localhost', 10000)
-        # sock.connect(server_address)
-        # sock.sendall('Ciao, sono il server')
-        self.send_response(200)
-        print 'Risposta partita'
-        self.end_headers()
+        json_file = json.loads(post_body)
+        client_user = json_file['user']
+        client_password = json_file['pass']
+        client = MongoClient('localhost', 27017)
+        db = client['admin']
+        collection = db['foo']
+        query_result = collection.find_one({"user": client_user, "password": client_password})
+        print self.client_address
+        if query_result is None:
+            print "Mando 401"
+            self.send_response(401, message="false")
+            self.end_headers()
+        else:
+            print 'Mando 200'
+            self.send_response(200, message="true")
+            self.end_headers()
+
+
 
     def do_PUT(self):
         print 'Add Waiting Room'
@@ -58,6 +72,7 @@ class MyHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         print gamers
         print put_body
+        print 'Sto nella PUT'
         self.end_headers()
 
     def do_AUTHHEAD(self):
@@ -82,8 +97,8 @@ def main():
     print 'Started httpserver on port ', port_number
     server.serve_forever()
 
-    #except: KeyboardInterrupt
-    #print "Server has been closed"
+    #except: KeyboardInterrupt()
+    print "Server has been closed"
     server.socket.close()
 
 main()
