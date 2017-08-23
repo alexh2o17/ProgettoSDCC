@@ -10,7 +10,7 @@ class MyApp(App):
         super(MyApp, self).__init__(*args)
 
     def main(self):
-        container = gui.VBox(width = 500, height = 300)
+        self.container = gui.VBox(width = 500, height = 300)
         self.lbl = gui.Label('Murgia 2-3')
         self.lblName = gui.Label('Nome Utente')
         self.name= gui.Input('name')
@@ -22,15 +22,15 @@ class MyApp(App):
         self.bt.set_on_click_listener(self.on_button_pressed)
 
         # appending a widget to another, the first argument is a string key
-        container.append(self.lbl)
-        container.append(self.lblName)
-        container.append(self.name)
-        container.append(self.lblPwd)
-        container.append(self.pwd)
-        container.append(self.bt)
+        self.container.append(self.lbl)
+        self.container.append(self.lblName)
+        self.container.append(self.name)
+        self.container.append(self.lblPwd)
+        self.container.append(self.pwd)
+        self.container.append(self.bt)
 
         # returning the root widget
-        return container
+        return self.container
 
 
     # listener function
@@ -41,12 +41,21 @@ class MyApp(App):
         headers = {'content_length': 'payload_len', 'content-type': 'application/json', 'Connection': 'close'}
         r = requests.post('http://localhost:8080', json=payload, headers=headers)
         print r.headers
-        self.lbl.set_text('Asensio 1-4!')
-        self.create = gui.Button('Play')
-        self.create.set_on_click_listener(self.on_create_pressed)
         print r.status_code
         if r.status_code == 200:
             print 'Prepara la nuova pagina per il client'
+            self.user = self.name.get_value()
+            self.lbl.set_text(self.user)
+
+            self.container.remove_child(self.lblName)
+            self.container.remove_child(self.lblPwd)
+            self.container.remove_child(self.name)
+            self.container.remove_child(self.pwd)
+            self.container.remove_child(self.bt)
+
+            self.create = gui.Button('Play')
+            self.create.set_on_click_listener(self.on_create_pressed)
+            self.container.append(self.create)
         else:
             print 'Reinserisci le credenziali di accesso'
         # container.append(self.create)
@@ -58,10 +67,9 @@ class MyApp(App):
         # print response
 
     def on_create_pressed(self, widget):
-        payload={'user': 'alex'}
-        payload_len = len(payload)
+        payload = {'user': self.user, 'addr': self.client_address}
         print payload
-        headers = {'content_length': payload_len, 'content-type': 'application/json', 'Connection': 'close'}
+        headers = {'content_length': 'payload_len', 'content-type': 'application/json', 'Connection': 'close'}
         r = requests.put('http://localhost:8080', json=payload, headers=headers)
         print r.headers
 
