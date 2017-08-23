@@ -3,7 +3,21 @@ import sys
 import requests
 import remi.gui as gui
 from remi import start, App
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
+
+class MyHandler(BaseHTTPRequestHandler):
+    def do_HEAD(self):
+        print "send header"
+        self.send_response(200, 'OK')
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        return
+    def do_POST(self):
+        print "ciao"
+        self.send_response(200, 'OK')
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
 
 class MyApp(App):
     def __init__(self, *args):
