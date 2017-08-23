@@ -89,12 +89,16 @@ def route_gamer(self):
         print i
         filex = json.loads(i)
         print filex["user"]
-        print filex["addr"]
-        add= "http://127.0.0.1:50708"
-        payload= {'route':'http://ciao.it'}
+        address= filex["addr"]
+        # print address[1]
+        # port = str(address[1])
+        # add= "http://"+address[0]+":"+port
+        # print add
+        add = "http://127.0.0.1:51745"
+        payload= {'route': 'userasa', 'index': 'ccccc'}
         headers = {'content_length': 'payload_len', 'content-type': 'application/json', 'Connection': 'close'}
         x = requests.post(add,json=payload, headers=headers)
-        x.headers
+        print x
 
 
 def main():
