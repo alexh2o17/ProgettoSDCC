@@ -63,7 +63,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 print 'Mando 200'
                 self.send_response(200)
                 self.end_headers()
-        elif action == 'nuovo_utente':
+        elif action == 'new_user':
             client_user = json_file['user']
             client_password = json_file['pass']
             client = MongoClient('localhost', 27017)
