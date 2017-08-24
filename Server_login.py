@@ -8,7 +8,6 @@ import socket
 import ssl
 import requests
 import json
-import threading
 
 
 class MyHandler(BaseHTTPRequestHandler):
@@ -46,21 +45,33 @@ class MyHandler(BaseHTTPRequestHandler):
         post_body = self.rfile.read(content_len)
         print post_body
         json_file = json.loads(post_body)
-        client_user = json_file['user']
-        client_password = json_file['pass']
-        client = MongoClient('localhost', 27017)
-        db = client['testDB']
-        collection = db['foo']
-        query_result = collection.find_one({"user": client_user, "password": client_password})
-        print self.client_address
-        if query_result is None:
-            print "Mando 401"
-            self.send_response(401, message="false")
-            self.end_headers()
-        else:
-            print 'Mando 200'
-            self.send_response(200, message="true")
-            self.end_headers()
+        action = json_file['command']
+        print action
+        if action == 'login':
+            client_user = json_file['user']
+            client_password = json_file['pass']
+            client = MongoClient('localhost', 27017)
+            db = client['admin']
+            collection = db['foo']
+            query_result = collection.find_one({"user": client_user, "password": client_password})
+            print self.client_address
+            if query_result is None:
+                print "Mando 401"
+                self.send_response(401, message="false")
+                self.end_headers()
+            else:
+                print 'Mando 200'
+                self.send_response(200)
+                self.end_headers()
+        elif action == 'nuovo_utente':
+            client_user = json_file['user']
+            client_password = json_file['pass']
+            client = MongoClient('localhost', 27017)
+            db = client['admin']
+            collection = db['foo']
+            collection.insert_one({"user": client_user, "password": client_password})
+
+
 
 
 
@@ -68,13 +79,13 @@ class MyHandler(BaseHTTPRequestHandler):
         print 'Add Waiting Room'
         content_len = int(self.headers.getheader('content-length', 0))
         put_body = self.rfile.read(content_len)
-        gamers.append(put_body)
+        gamers.append(['cis','cia'])
+        gamers.append(['nico','asads'])
         self.send_response(200)
         print gamers
+        print put_body
+        print 'Sto nella PUT'
         self.end_headers()
-        if len(gamers) >= 4:
-            route_gamer(self)
-
 
     def do_AUTHHEAD(self):
         print "send header"
@@ -82,23 +93,6 @@ class MyHandler(BaseHTTPRequestHandler):
         self.send_header('WWW-Authenticate', 'Basic realm=\"Test\"')
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-
-def route_gamer(self):
-    print "routing"
-    for i in gamers:
-        print i
-        filex = json.loads(i)
-        print filex["user"]
-        address= filex["addr"]
-        # print address[1]
-        # port = str(address[1])
-        # add= "http://"+address[0]+":"+port
-        # print add
-        add = "http://127.0.0.1:51745"
-        payload= {'route': 'userasa', 'index': 'ccccc'}
-        headers = {'content_length': 'payload_len', 'content-type': 'application/json', 'Connection': 'close'}
-        x = requests.post(add,json=payload, headers=headers)
-        print x
 
 
 def main():
