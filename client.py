@@ -43,7 +43,10 @@ class MainFrame(Frame):
             print 'Reinserisci le credenziali di accesso'
 
     def command_new_user(self):
-        self.parent.
+        self.user_entry.destroy()
+        self.password_entry.destroy()
+        self.login_button.destroy()
+        self.new_user_button.destroy()
         NewUserFrame(self.parent)
 
 
