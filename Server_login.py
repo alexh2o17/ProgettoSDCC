@@ -106,7 +106,6 @@ def route_gamer(self):
         # port = str(address[1])
         # add= "http://"+address[0]+":"+port
         # print add
-        time.sleep(5)
         server_address = ('127.0.0.1', 8181)
 
         sock = socket.socket()
@@ -114,6 +113,7 @@ def route_gamer(self):
 
             try:
                 sock.connect(server_address)
+
             except IOError:
                 print('IOError in Socket...')
                 continue
@@ -121,8 +121,9 @@ def route_gamer(self):
             time.sleep(2)
             try:
                 print "conn server ok"
-                sock.sendall("ciao sono ricchione")
-                gamers.remove(i)
+                sock.sendall("cioa")
+                # gamers.remove(i)
+                print "messaggio inviato"
 
             finally:
                 #     # fine della connessione, continua col ciclo while
