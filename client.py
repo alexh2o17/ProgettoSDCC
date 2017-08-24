@@ -11,6 +11,8 @@ class MainFrame(Frame):
         Frame.__init__(self, parent)
         self.parent = parent
 
+        #self.pack()
+
         self.user_entry = Entry(parent)
         self.user_entry.place(bordermode=INSIDE, height=30, width=100, relx=0.5, rely=0.3, anchor=CENTER)
 
@@ -38,7 +40,11 @@ class MainFrame(Frame):
         print r.status_code
         if r.status_code == 200:
             print 'Prepara la nuova pagina per il client'
-            #new_page()
+            self.user_entry.destroy()
+            self.password_entry.destroy()
+            self.login_button.destroy()
+            self.new_user_button.destroy()
+            PlayerFrame(self.parent)
         else:
             print 'Reinserisci le credenziali di accesso'
 
@@ -55,7 +61,6 @@ class NewUserFrame(Frame):
         # self.main_window = main_window
         # self.frame = Tk.frame(parent)
         Frame.__init__(self, parent)
-
         self.new_user_entry = Entry(parent)
         self.new_user_entry.place(bordermode=INSIDE, height=30, width=100, relx=0.5, rely=0.3, anchor=CENTER)
 
@@ -81,26 +86,30 @@ class NewUserFrame(Frame):
             r = requests.post('http://localhost:8080', json=payload, headers=headers)
 
 
-class PlayerFrame(ttk.Frame):
-    def __init__(self, main_window):
-        self.main_window = main_window
-        self.frame = Tk.frame(main_window)
+class PlayerFrame(Frame):
+    def __init__(self, parent):
+        #self.main_window = main_window
+        #self.frame = Tk.frame(parent)
+        Frame.__init__(self, parent)
+        self.parent = parent
 
         # command = command_nuova_partita
-        self.nuova_partita_button = ttk.Button(self.frame, text="Nuova Partita")
+        self.nuova_partita_button = ttk.Button(self.parent, text="Nuova Partita", command=self.command_nuova_partita)
         self.nuova_partita_button.pack()
         self.nuova_partita_button.place(bordermode=INSIDE, height=50, width=100, relx=0.5, rely=0.3, anchor=CENTER)
 
         # command = command_statistiche
-        self.statistiche_button = ttk.Button(self.frame, text="Statistiche")
+        self.statistiche_button = ttk.Button(self.parent, text="Statistiche")
         self.statistiche_button.pack()
         self.statistiche_button.place(bordermode=INSIDE, height=50, width=100, relx=0.5, rely=0.4, anchor=CENTER)
 
         # command = command_profilo
-        self.profilo_button = ttk.Button(self.frame, text="Profilo")
+        self.profilo_button = ttk.Button(self.parent, text="Profilo")
         self.profilo_button.pack()
         self.profilo_button.place(bordermode=INSIDE, height=50, width=100, relx=0.5, rely=0.5, anchor=CENTER)
 
+        def command_nuova_partita():
+            
 
 def main():
     root = Tk()
