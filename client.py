@@ -4,7 +4,30 @@ import requests
 from PIL import ImageTk, Image
 import socket
 import time
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import select
 
+
+#
+# class MyHandler(BaseHTTPRequestHandler):
+#     def do_HEAD(self):
+#         print "send header"
+#         self.send_response(200, 'OK')
+#         self.send_header('Content-type', 'text/html')
+#         self.end_headers()
+#         return
+#
+#     def do_POST(self):
+#         print "ciao"
+#         self.send_response(200, 'OK')
+#         self.end_headers()
+#
+#     def do_AUTHHEAD(self):
+#         print "send header"
+#         self.send_response(401)
+#         self.send_header('WWW-Authenticate', 'Basic realm=\"Test\"')
+#         self.send_header('Content-type', 'text/html')
+#         self.end_headers()
 
 class MainFrame(Frame):
     def __init__(self, parent):
@@ -117,28 +140,31 @@ class PlayerFrame(Frame):
         headers = {'content_length': 'payload_len', 'content-type': 'application/json', 'Connection': 'close'}
         r = requests.put('http://localhost:8080', json=payload, headers=headers)
         print r.headers
-        print "ciao"
-        HOST, PORT = '127.0.0.1', 8181
 
+        HOST, PORT = '127.0.0.1', 8181
         listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         listen_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         listen_socket.bind((HOST, PORT))
         print time.asctime(), "Listen socket - %s:%s" % (HOST, PORT)
-        http_response = "Response"
-        readlist = [listen_socket]
+        # http_response = "Response"
+        # readlist = [listen_socket]
 
         print time.asctime(), "Server Starts - %s:%s" % (HOST, PORT)
 
         # tupla dove viene salvata la lista dei client in formto < g , n >
-        log = tuple(['SOT'])  # StartOfTuple
+        # log = tuple(['SOT'])  # StartOfTuple
+        listen_socket.listen(5)
+        readlist = [listen_socket]
+
         while True:
 
             # ciclo while di esecuzione del server
             print("Listening on port %s..." % PORT)
-            print "ciao"
+            # sread, swrite, sexc = select.select(readlist, [], [], 10)
 
             server_connection, server_address = listen_socket.accept()
             time.sleep(2)
+            print "ciao"
             try:
                 print('#########################################')
                 print('###                                   ###')
@@ -182,6 +208,7 @@ class PlayerFrame(Frame):
 
         listen_socket.close();
         print('Closing Socket...')
+
 
 def main():
     root = Tk()

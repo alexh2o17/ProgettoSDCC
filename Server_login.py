@@ -98,13 +98,15 @@ def route_gamer(self):
     print "routing"
     for i in gamers:
         print i
-        filex = json.loads(i)
-        print filex["user"]
-        address= filex["addr"]
+        # filex = json.loads(i)
+        # print filex["user"]
+        # address= filex["addr"]
+        # address= self.client_address
         # print address[1]
         # port = str(address[1])
         # add= "http://"+address[0]+":"+port
         # print add
+        time.sleep(5)
         server_address = ('127.0.0.1', 8181)
 
         sock = socket.socket()
