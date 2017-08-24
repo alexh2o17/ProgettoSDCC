@@ -10,6 +10,7 @@ import requests
 import json
 
 
+
 class MyHandler(BaseHTTPRequestHandler):
     def do_HEAD(self):
         print "send header"
@@ -51,7 +52,7 @@ class MyHandler(BaseHTTPRequestHandler):
             client_user = json_file['user']
             client_password = json_file['pass']
             client = MongoClient('localhost', 27017)
-            db = client['admin']
+            db = client['testDB']
             collection = db['foo']
             query_result = collection.find_one({"user": client_user, "password": client_password})
             print self.client_address
@@ -67,7 +68,7 @@ class MyHandler(BaseHTTPRequestHandler):
             client_user = json_file['user']
             client_password = json_file['pass']
             client = MongoClient('localhost', 27017)
-            db = client['admin']
+            db = client['testDB']
             collection = db['foo']
             collection.insert_one({"user": client_user, "password": client_password})
 
@@ -79,13 +80,12 @@ class MyHandler(BaseHTTPRequestHandler):
         print 'Add Waiting Room'
         content_len = int(self.headers.getheader('content-length', 0))
         put_body = self.rfile.read(content_len)
-        gamers.append(['cis','cia'])
-        gamers.append(['nico','asads'])
+        gamers.append(put_body)
         self.send_response(200)
         print gamers
-        print put_body
-        print 'Sto nella PUT'
         self.end_headers()
+        if len(gamers) >= 1:
+            route_gamer(self)
 
     def do_AUTHHEAD(self):
         print "send header"
@@ -93,6 +93,55 @@ class MyHandler(BaseHTTPRequestHandler):
         self.send_header('WWW-Authenticate', 'Basic realm=\"Test\"')
         self.send_header('Content-type', 'text/html')
         self.end_headers()
+
+def route_gamer(self):
+    print "routing"
+    for i in gamers:
+        print i
+        filex = json.loads(i)
+        print filex["user"]
+        address= filex["addr"]
+        # print address[1]
+        # port = str(address[1])
+        # add= "http://"+address[0]+":"+port
+        # print add
+        server_address = ('127.0.0.1', 8181)
+
+        sock = socket.socket()
+        while True:
+
+            try:
+                sock.connect(server_address)
+            except IOError:
+                print('IOError in Socket...')
+                continue
+
+            time.sleep(2)
+            try:
+                print "conn server ok"
+                sock.sendall("ciao sono ricchione")
+                gamers.remove(i)
+
+            finally:
+                #     # fine della connessione, continua col ciclo while
+                print('#########################################')
+                print('###                                   ###')
+                print('###        Closing  Connection        ###')
+                print('###                                   ###')
+                print('#########################################')
+                sock.shutdown(1)
+                sock.close()
+
+            continue
+
+        print("Closing Connection...")
+        sock.shutdown(1)
+        sock.close()
+        # add = "http://127.0.0.1:49454"
+        # payload= {'route': 'userasa', 'index': 'ccccc'}
+        # headers = {'content_length': 'payload_len', 'content-type': 'application/json', 'Connection': 'close'}
+        # x = requests.post(add,json=payload, headers=headers)
+        # print x
 
 
 def main():

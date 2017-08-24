@@ -2,6 +2,8 @@ from Tkinter import *
 import ttk
 import requests
 from PIL import ImageTk, Image
+import socket
+import time
 
 
 class MainFrame(Frame):
@@ -108,8 +110,78 @@ class PlayerFrame(Frame):
         self.profilo_button.pack()
         self.profilo_button.place(bordermode=INSIDE, height=50, width=100, relx=0.5, rely=0.5, anchor=CENTER)
 
-        def command_nuova_partita():
-            
+    def command_nuova_partita(self):
+        print "ciao"
+        payload = {'user': 'alex', 'addr': '127.0.0.1'}
+        print payload
+        headers = {'content_length': 'payload_len', 'content-type': 'application/json', 'Connection': 'close'}
+        r = requests.put('http://localhost:8080', json=payload, headers=headers)
+        print r.headers
+        print "ciao"
+        HOST, PORT = '127.0.0.1', 8181
+
+        listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        listen_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listen_socket.bind((HOST, PORT))
+        print time.asctime(), "Listen socket - %s:%s" % (HOST, PORT)
+        http_response = "Response"
+        readlist = [listen_socket]
+
+        print time.asctime(), "Server Starts - %s:%s" % (HOST, PORT)
+
+        # tupla dove viene salvata la lista dei client in formto < g , n >
+        log = tuple(['SOT'])  # StartOfTuple
+        while True:
+
+            # ciclo while di esecuzione del server
+            print("Listening on port %s..." % PORT)
+            print "ciao"
+
+            server_connection, server_address = listen_socket.accept()
+            time.sleep(2)
+            try:
+                print('#########################################')
+                print('###                                   ###')
+                print('###      Starting New Connection      ###')
+                print('###                                   ###')
+                print('#########################################')
+
+                message = listen_socket.recv(1024)
+                print message
+
+
+            except Exception:
+                print(Exception.message)
+                try:
+                    server_connection.shutdown(1)
+                    server_connection.close()
+                except Exception:
+                    print(Exception.message)
+
+            finally:
+                try:
+                    server_connection.shutdown(1)
+                    server_connection.close()
+                except Exception:
+                    print(Exception.message)
+
+                finally:
+                    # fine della connessione
+                    print('#########################################')
+                    print('###                                   ###')
+                    print('###        Closing  Connection        ###')
+                    print('###                                   ###')
+                    print('#########################################')
+
+        # elif s == sys.stdin:
+        #     # handle standard input
+        #     print('stdin handler')
+        # else:
+        #     # handle all other sockets
+        #     print('err handler')
+
+        listen_socket.close();
+        print('Closing Socket...')
 
 def main():
     root = Tk()
