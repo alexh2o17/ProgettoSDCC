@@ -168,10 +168,10 @@ class NewUserFrame(Frame):
         self.new_user_entry = Entry(parent)
         self.new_user_entry.place(bordermode=INSIDE, height=30, width=100, relx=0.5, rely=0.3, anchor=CENTER)
 
-        self.new_pass_entry = Entry(parent)
+        self.new_pass_entry = Entry(parent, show="*")
         self.new_pass_entry.place(bordermode=INSIDE, height=30, width=100, relx=0.5, rely=0.4, anchor=CENTER)
 
-        self.confirm_pass_entry = Entry(parent)
+        self.confirm_pass_entry = Entry(parent, show="*")
         self.confirm_pass_entry.place(bordermode=INSIDE, height=30, width=100, relx=0.5, rely=0.5, anchor=CENTER)
 
         self.create_user_button = Button(parent, text="Crea Nuovo Utente", command=self.command_create_user)
