@@ -52,7 +52,7 @@ class MyHandler(BaseHTTPRequestHandler):
             client_user = json_file['user']
             client_password = json_file['pass']
             client = MongoClient('localhost', 27017)
-            db = client['testDB']
+            db = client['admin']
             collection = db['foo']
             query_result = collection.find_one({"user": client_user, "password": client_password})
             print self.client_address
