@@ -4,7 +4,90 @@ import requests
 from PIL import ImageTk, Image
 import socket
 import time
+import select
+import threading
+import errno
 
+class RouteThread(threading.Thread):
+    def init(self):
+        super(RouteThread, self).__init__()
+        print "new Route"
+
+    def run(self):
+       print "newRoute"
+
+       HOST, PORT = '127.0.0.1', 8181
+       listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+       listen_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+       listen_socket.bind((HOST, PORT))
+       print time.asctime(), "Listen socket - %s:%s" % (HOST, PORT)
+       # http_response = "Response"
+       # readlist = [listen_socket]
+
+       print time.asctime(), "Server Starts - %s:%s" % (HOST, PORT)
+
+       # tupla dove viene salvata la lista dei client in formto < g , n >
+       # log = tuple(['SOT'])  # StartOfTuple
+       nemo= True
+       while nemo:
+           listen_socket.listen(5)
+           readlist = [listen_socket]
+           # ciclo while di esecuzione del server
+           print("Listening on port %s..." % PORT)
+           sread, swrite, sexc = select.select(readlist, [], [], 10)
+           for s in sread:
+               if s == listen_socket:
+                   print "waiting for accept"
+                   client_connection, client_address = listen_socket.accept()
+           # client_connection, client_address = listen_socket.accept()
+           time.sleep(2)
+           try:
+               print('#########################################')
+               print('###                                   ###')
+               print('###      Starting New Connection      ###')
+               print('###                                   ###')
+               print('#########################################')
+
+               message = client_connection.recv(1024)
+               print message
+               nemo = False
+
+
+           except socket.error as Exception:
+               print "ciao"
+               if Exception.errno != errno.EACCES:
+                   print Exception.errno
+               print(Exception.message)
+               try:
+                   client_connection.shutdown(1)
+                   client_connection.close()
+               except Exception:
+                   print(Exception.message)
+
+           finally:
+               try:
+                   client_connection.shutdown(1)
+                   client_connection.close()
+               except Exception:
+                   print(Exception.message)
+
+               finally:
+                   # fine della connessione
+                   print('#########################################')
+                   print('###                                   ###')
+                   print('###        Closing  Connection        ###')
+                   print('###                                   ###')
+                   print('#########################################')
+
+       # elif s == sys.stdin:
+       #     # handle standard input
+       #     print('stdin handler')
+       # else:
+       #     # handle all other sockets
+       #     print('err handler')
+
+       listen_socket.close();
+       print('Closing Socket...')
 
 class MainFrame(Frame):
     def __init__(self, parent):
@@ -36,7 +119,7 @@ class MainFrame(Frame):
         print payload
         payload_len = len(payload)
         headers = {'content-length': str(payload_len), 'content-type': 'application/json', 'Connection': 'close'}
-        r = requests.post('http://localhost:8080', json=payload, headers=headers)
+        r = requests.post('http://localhost:8080/login', json=payload, headers=headers)
         print 'Qualcosa'
         print r.headers
         print r.status_code
@@ -91,7 +174,8 @@ class NewUserFrame(Frame):
             print payload
             payload_len = len(payload)
             headers = {'content_length': str(payload_len), 'content-type': 'application/json', 'Connection': 'close'}
-            r = requests.post('http://localhost:8080', json=payload, headers=headers)
+            r = requests.post('http://localhost:8080/login', json=payload, headers=headers)
+            print r
 
 
 class PlayerFrame(Frame):
@@ -116,78 +200,18 @@ class PlayerFrame(Frame):
         self.profilo_button.pack()
         self.profilo_button.place(bordermode=INSIDE, height=50, width=100, relx=0.5, rely=0.5, anchor=CENTER)
 
+
     def command_nuova_partita(self):
-        print "ciao"
+        routeThr= RouteThread()
+        routeThr.start()
         payload = {'user': 'alex', 'addr': '127.0.0.1'}
         print payload
-        headers = {'content_length': 'payload_len', 'content-type': 'application/json', 'Connection': 'close'}
-        r = requests.put('http://localhost:8080', json=payload, headers=headers)
+        headers = {'content_length': 'payload_len', 'content-type': 'application/json'}
+        r = requests.post('http://localhost:8080/newgame', json=payload, headers=headers)
         print r.headers
-        print "ciao"
-        HOST, PORT = '127.0.0.1', 8181
-
-        listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        listen_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        listen_socket.bind((HOST, PORT))
-        print time.asctime(), "Listen socket - %s:%s" % (HOST, PORT)
-        http_response = "Response"
-        readlist = [listen_socket]
-
-        print time.asctime(), "Server Starts - %s:%s" % (HOST, PORT)
-
-        # tupla dove viene salvata la lista dei client in formto < g , n >
-        log = tuple(['SOT'])  # StartOfTuple
-        while True:
-
-            # ciclo while di esecuzione del server
-            print("Listening on port %s..." % PORT)
-            print "ciao"
-
-            server_connection, server_address = listen_socket.accept()
-            time.sleep(2)
-            try:
-                print('#########################################')
-                print('###                                   ###')
-                print('###      Starting New Connection      ###')
-                print('###                                   ###')
-                print('#########################################')
-
-                message = listen_socket.recv(1024)
-                print message
+        print "ciadsadasdaso"
 
 
-            except Exception:
-                print(Exception.message)
-                try:
-                    server_connection.shutdown(1)
-                    server_connection.close()
-                except Exception:
-                    print(Exception.message)
-
-            finally:
-                try:
-                    server_connection.shutdown(1)
-                    server_connection.close()
-                except Exception:
-                    print(Exception.message)
-
-                finally:
-                    # fine della connessione
-                    print('#########################################')
-                    print('###                                   ###')
-                    print('###        Closing  Connection        ###')
-                    print('###                                   ###')
-                    print('#########################################')
-
-        # elif s == sys.stdin:
-        #     # handle standard input
-        #     print('stdin handler')
-        # else:
-        #     # handle all other sockets
-        #     print('err handler')
-
-        listen_socket.close();
-        print('Closing Socket...')
 
 def main():
     root = Tk()
