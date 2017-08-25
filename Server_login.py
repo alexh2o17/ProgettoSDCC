@@ -1,5 +1,4 @@
 import pprint
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import time
 import pymongo
 from pymongo import MongoClient

@@ -146,6 +146,7 @@ class NewUserFrame(Frame):
         # self.main_window = main_window
         # self.frame = Tk.frame(parent)
         Frame.__init__(self, parent)
+        self.parent = parent
         self.new_user_entry = Entry(parent)
         self.new_user_entry.place(bordermode=INSIDE, height=30, width=100, relx=0.6, rely=0.3, anchor=CENTER)
         self.new_user_label = Label(parent, text='Nuovo Utente')
@@ -165,6 +166,22 @@ class NewUserFrame(Frame):
         self.create_user_button.pack()
         self.create_user_button.place(bordermode=INSIDE, height=30, width=150, relx=0.5, rely=0.6, anchor=CENTER)
 
+        self.exit_button = Button(parent, text="Indietro", command=self.command_exit)
+        self.exit_button.pack()
+        self.exit_button.place(bordermode=INSIDE, height=30, width=150, relx=0.5, rely=0.72, anchor=CENTER)
+
+
+    def command_exit(self):
+        for widget in self.parent.winfo_children():
+            widget.destroy()
+        MainFrame(self.parent)
+
+            # self.new_user_entry.destroy()
+        # self.new_user_label.destroy()
+        # self.new_pass_entry.destroy()
+        # self.new_pass_label.destroy()
+        # self.
+
     def command_create_user(self):
         username = self.new_user_entry.get()
         password = self.new_pass_entry.get()
@@ -176,6 +193,10 @@ class NewUserFrame(Frame):
             headers = {'content_length': str(payload_len), 'content-type': 'application/json', 'Connection': 'close'}
             r = requests.post('http://localhost:8080/login', json=payload, headers=headers)
             print r
+            self.command_exit()
+        else:
+            self.error_pass_label = Label(self.parent, text='Password diverse')
+            self.error_pass_label.place(bordermode=INSIDE, height=30, width=170, relx=0.5, rely=0.67, anchor=CENTER)
 
 
 class PlayerFrame(Frame):
@@ -200,6 +221,14 @@ class PlayerFrame(Frame):
         self.profilo_button.pack()
         self.profilo_button.place(bordermode=INSIDE, height=50, width=100, relx=0.5, rely=0.5, anchor=CENTER)
 
+        self.exit_button = Button(parent, text="Indietro", command=self.command_exit)
+        self.exit_button.pack()
+        self.exit_button.place(bordermode=INSIDE, height=30, width=150, relx=0.5, rely=0.72, anchor=CENTER)
+
+    def command_exit(self):
+        for widget in self.parent.winfo_children():
+            widget.destroy()
+        MainFrame(self.parent)
 
     def command_nuova_partita(self):
         routeThr= RouteThread()
@@ -209,7 +238,6 @@ class PlayerFrame(Frame):
         headers = {'content_length': 'payload_len', 'content-type': 'application/json'}
         r = requests.post('http://localhost:8080/newgame', json=payload, headers=headers)
         print r.headers
-        print "ciadsadasdaso"
 
 
 
