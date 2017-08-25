@@ -68,9 +68,11 @@ class MyHandler(BaseHTTPRequestHandler):
             client_user = json_file['user']
             client_password = json_file['pass']
             client = MongoClient('localhost', 27017)
-            db = client['testDB']
+            db = client['admin']
             collection = db['foo']
             collection.insert_one({"user": client_user, "password": client_password})
+            self.send_response(200)
+            self.end_headers()
 
 
 
