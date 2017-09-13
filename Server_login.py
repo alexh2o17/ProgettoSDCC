@@ -9,9 +9,20 @@ import requests
 import json
 from flask import Flask,json,request,Response
 import threading
+import boto3
+from boto3.dynamodb.conditions import Key, Attr
+
 
 # Initialize the Flask application
 app = Flask(__name__)
+
+#dynamoDB
+dynamodbs = boto3.resource('dynamodb')
+table = dynamodbs.Table('LoginTable')
+clientDynamo = boto3.client('dynamodb')
+
+
+
 
 class ServerRouteThread(threading.Thread):
     def init(self):
@@ -119,12 +130,17 @@ def user_login():
     if action == 'login':
         client_user = json_file['user']
         client_password = json_file['pass']
-        client = MongoClient('localhost', 27017)
-        db = client['admin']
-        collection = db['foo']
-        query_result = collection.find_one({"user": client_user, "password": client_password})
-        print request.remote_addr
-        if query_result is None:
+        # client = MongoClient('localhost', 27017)
+        # db = client['admin']
+        # collection = db['foo']
+        query_result = table.query(
+            KeyConditionExpression=Key('Username').eq(client_user),
+            FilterExpression= Attr('Password').eq(client_password)
+        )
+        # query_result = collection.find_one({"user": client_user, "password": client_password})
+        print query_result
+        result= query_result['Items']
+        if result.__len__() == 0:
             print "Mando 401"
             return Response(response="false",status=401)
             # self.send_response(401, message="false")
@@ -137,11 +153,23 @@ def user_login():
     elif action == 'new_user':
         client_user = json_file['user']
         client_password = json_file['pass']
-        client = MongoClient('localhost', 27017)
-        db = client['admin']
-        collection = db['foo']
-        collection.insert_one({"user": client_user, "password": client_password})
-        return Response(status=200)
+        # client = MongoClient('localhost', 27017)
+        # db = client['admin']
+        # collection = db['foo']
+        # collection.insert_one({"user": client_user, "password": client_password})
+        result = table.put_item(
+            Item={
+                'Username' : client_user,
+                'Password' : client_password
+            }
+        )
+        res = result['ResponseMetadata']
+        if res['HTTPStatusCode'] == 200:
+            print "Create Success"
+            return Response(status=200)
+        else:
+            print "non bene"
+            return Response(status=401)
 
 
 @app.route('/newgame',methods=['POST'])
@@ -156,9 +184,12 @@ def new_game():
     r = Response(status=200)
 
     print gamers
-    if len(gamers) >= 1:
+    if len(gamers) == 4:
         serverThr= ServerRouteThread()
         serverThr.start()
+    elif len(gamers) >= 0:
+        r = Response(status=500)
+        print "aosa"
     return r
 
 
@@ -234,7 +265,7 @@ def main():
     #try:
     # server = HTTPServer(('localhost', port_number), MyHandler)
 
-    server = app.run('localhost', port_number)
+    server = app.run(host, port_number)
     # server.socket = ssl.wrap_socket(server.socket, server_side = True, certfile = curdir+sep+'server.crt', keyfile = curdir+sep+'server.key')
     print 'Started httpserver on port ', port_number
     server.serve_forever()

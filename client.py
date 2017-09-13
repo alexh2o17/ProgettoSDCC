@@ -119,7 +119,10 @@ class MainFrame(Frame):
         print payload
         payload_len = len(payload)
         headers = {'content-length': str(payload_len), 'content-type': 'application/json', 'Connection': 'close'}
-        r = requests.post('http://localhost:8080/login', json=payload, headers=headers)
+        # r = requests.post('http://localhost:8080/login', json=payload, headers=headers)
+        r = requests.post('http://ec2-54-93-46-70.eu-central-1.compute.amazonaws.com:8080/login', json=payload,
+                          headers=headers)
+
         print 'Qualcosa'
         print r.headers
         print r.status_code
@@ -191,7 +194,9 @@ class NewUserFrame(Frame):
             print payload
             payload_len = len(payload)
             headers = {'content_length': str(payload_len), 'content-type': 'application/json', 'Connection': 'close'}
-            r = requests.post('http://localhost:8080/login', json=payload, headers=headers)
+            # r = requests.post('http://localhost:8080/login', json=payload, headers=headers)
+            r = requests.post('http://ec2-54-93-46-70.eu-central-1.compute.amazonaws.com:8080/login', json=payload,
+                              headers=headers)
             print r
             self.command_exit()
         else:
@@ -231,13 +236,17 @@ class PlayerFrame(Frame):
         MainFrame(self.parent)
 
     def command_nuova_partita(self):
-        routeThr= RouteThread()
+        nemo = True
+        routeThr = RouteThread()
         routeThr.start()
-        payload = {'user': 'alex', 'addr': '127.0.0.1'}
-        print payload
-        headers = {'content_length': 'payload_len', 'content-type': 'application/json'}
-        r = requests.post('http://localhost:8080/newgame', json=payload, headers=headers)
-        print r.headers
+        while nemo:
+            payload = {'user': 'alex', 'addr': '127.0.0.1'}
+            print payload
+            headers = {'content_length': 'payload_len', 'content-type': 'application/json'}
+            r = requests.post('http://localhost:8080/newgame', json=payload, headers=headers)
+            if(r.status_code== 200):
+                nemo = False
+            print r.headers
 
 
 
