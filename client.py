@@ -243,7 +243,9 @@ class PlayerFrame(Frame):
         payload = {'user': 'alex', 'addr': '127.0.0.1'}
         print payload
         headers = {'content_length': 'payload_len', 'content-type': 'application/json'}
-        r = requests.post('http://localhost:8181/generate', json=payload, headers=headers)
+        # r = requests.post('http://localhost:8181/generate', json=payload, headers=headers)
+        r = requests.post('http://localhost:8181/startGame/1505474165.37Server1', json=payload, headers=headers)
+
         # print r.text
         print r.json()
         if(r.status_code== 200):

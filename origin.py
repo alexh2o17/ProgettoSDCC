@@ -45,13 +45,6 @@ def newGame():
     nemo = True
     set = 0
 
-    payload = {'n': round(random.randrange(1000, 100000)/10)*10}
-    headers = {'content_length': 'payload_len', 'content-type': 'application/json'}
-    r = requests.post('http://ec2-54-93-119-88.eu-central-1.compute.amazonaws.com:8080/generate', json=payload, timeout = None)
-    print r.text
-    time.sleep(2)
-
-    return Response(status=200)
 
 
     while nemo:
@@ -113,11 +106,17 @@ def newGame():
                     },
                     UpdateExpression='SET client%d' % set +' = :val%d' %set,
                     ExpressionAttributeValues={
-                        ':val%d' % set : client
+                        ':val%d' % set: client
                     }
                 )
                 lock.release()
+        get_Server(client, gameid, set, instance_list)
+    return Response(response=json.dumps(client), status=200)
 
+
+    # health = load_balancer.get_instance_health()
+
+def get_Server(client, gameid, set, instance_list):
     instances = ec2.describe_instances(Filters=[
         {
             'Name': 'instance-state-name',
@@ -132,7 +131,6 @@ def newGame():
     metric_result = {}
 
     metricDict = []
-
 
     for reservation in instances['Reservations']:
         for instance in reservation['Instances']:
@@ -177,29 +175,37 @@ def newGame():
                     cw_response['instance_id'] = id
                     av = cw_response['Datapoints'][1]['Average']
 
-                metric_result['average']= float(metric_result.get('average')) + float(av)
+                metric_result['average'] = float(metric_result.get('average')) + float(av)
                 metricDict.append(metric_result)
                 # metricDict.append(cw_response)
     print metricDict
-    min = 10000
-    minDNS= None
+    min = 1000000000
+    minDNS = None
     minID = None
     for metric in metricDict:
         if metric['average'] < min:
             min = metric['average']
-            minDNS= metric['DnsName']
+            minDNS = metric['DnsName']
             minID = metric['id']
 
     client['DnsName'] = minDNS
     client['instanceID'] = minID
+    if minDNS == 'ec2-35-158-97-28.eu-central-1.compute.amazonaws.com':
+        print minDNS
 
-    payload ='Ao mi dai due porte?'
-    headers = {'content_length': 'payload_len', 'content-type': 'application/json'}
-    r = requests.post('http://ec2-54-93-119-88.eu-central-1.compute.amazonaws.com:8080', json=payload, headers=headers)
+        payload = {'dammi' : 'porte'}
+        headers = {'content_length': 'payload_len', 'content-type': 'application/json'}
+        r = requests.post('http://ec2-35-158-97-28.eu-central-1.compute.amazonaws.com:8080/generate', json=payload)
 
+        port = r.json()
+        print port
+    else:
+        port = {'port_origin' : 87878}
+    client['port'] = port
     print 'val%d' % set
     print gameid
 
+    # if set != 4:
     table.update_item(
         Key={
             'gameID': gameid,
@@ -209,12 +215,102 @@ def newGame():
             ':val': client
         }
     )
-    return Response(response=json.dumps(client), status=200)
+    # else:
+    #     table.update_item(
+    #         Key={
+    #             'gameID': gameid,
+    #         },
+    #         UpdateExpression='SET client%d' % set + ' = :val AND state = :val_state',
+    #         ExpressionAttributeValues={
+    #             ':val': client,
+    #             ':val_state': 'Gaming'
+    #         }
+    #     )
+    #     start_Game()
+    return Response(status=200)
 
+@app.route('/startGame/<gameid>', methods=['POST'])
+def start_Game(gameid):
+    query = table.query(
+            KeyConditionExpression=Key('gameID').eq(gameid),
+        )
+    query = query.get('Items')
+    if query.__len__() != 0:
+        query_result = query[0]
+    else:
+        print "ciao"
+        return Response(status=401)
+    print query
+    print gameid
+    client_list = []
+    sync_list = []
+    client_list.append(query_result.get('client1'))
+    client_list.append(query_result.get('client2'))
+    client_list.append(query_result.get('client3'))
+    client_list.append(query_result.get('client4'))
 
-    # health = load_balancer.get_instance_health()
+    for client in client_list:
+        if client is not None:
+            print client.get('port')
+            sync_list.append((client.get('DnsName'), client.get('port').get('port_origin')))
 
+    for client in client_list:
+        if client is not None:
+            serverDns = client.get('DnsName')
+            originPort = client.get('port').get('port_origin')
+            server_address= (serverDns, originPort)
+            partners = []
+            for server in sync_list:
+                if server != server_address:
+                    partners.append(str(server[0])+':'+str(server[1]))
 
+            if serverDns == 'ec2-35-158-97-28.eu-central-1.compute.amazonaws.com':
+                sock = socket.socket()
+                print partners
+                try:
+                    sock.connect(server_address)
+                except IOError:
+                    print('IOError in Socket...')
+
+                message = {'command' : 'partners', 'partners': partners, 'start': 30}
+
+                sock.send(json.dumps(message))
+    return Response(status=200)
+
+@app.route('/serverStop/<userid>/<gameid>', methods=['POST'])
+def server_stop(userid,gameid):
+    query = table.query(
+        KeyConditionExpression=Key('gameID').eq(gameid),
+    )
+    query = query.get('Items')
+    if query.__len__() != 0:
+        query_result = query[0]
+    else:
+        return Response(status=401)
+
+    client_list = []
+    instance_list = []
+    client_list.append(query_result.get('client1'))
+    client_list.append(query_result.get('client2'))
+    client_list.append(query_result.get('client3'))
+    client_list.append(query_result.get('client4'))
+    n=1
+    for client in client_list:
+        if client is not None and client.get('userID') == userid:
+            set = n
+            serverDNS = client.get('DnsName')
+            originPort = client.get('port').get('originPort')
+            server_address = (serverDNS,originPort)
+            sock = socket.socket()
+            try:
+                sock.connect(server_address)
+                return Response(status=401)
+            except IOError:
+                print('IOError in Socket...')
+                get_Server(gameid,set,instance_list)
+        else:
+            instance_list.append(client.get('instanceID'))
+        n +=1
 
 def main():
     host = 'localhost'
