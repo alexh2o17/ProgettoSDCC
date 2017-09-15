@@ -119,9 +119,9 @@ class MainFrame(Frame):
         print payload
         payload_len = len(payload)
         headers = {'content-length': str(payload_len), 'content-type': 'application/json', 'Connection': 'close'}
-        # r = requests.post('http://localhost:8080/login', json=payload, headers=headers)
-        r = requests.post('http://ec2-54-93-46-70.eu-central-1.compute.amazonaws.com:8080/login', json=payload,
-                          headers=headers)
+        r = requests.post('http://localhost:8080/login', json=payload, headers=headers)
+        # r = requests.post('http://ec2-54-93-46-70.eu-central-1.compute.amazonaws.com:8080/login', json=payload,
+        #                   headers=headers)
 
         print 'Qualcosa'
         print r.headers
@@ -194,9 +194,9 @@ class NewUserFrame(Frame):
             print payload
             payload_len = len(payload)
             headers = {'content_length': str(payload_len), 'content-type': 'application/json', 'Connection': 'close'}
-            # r = requests.post('http://localhost:8080/login', json=payload, headers=headers)
-            r = requests.post('http://ec2-54-93-46-70.eu-central-1.compute.amazonaws.com:8080/login', json=payload,
-                              headers=headers)
+            r = requests.post('http://localhost:8080/login', json=payload, headers=headers)
+            # r = requests.post('http://ec2-54-93-46-70.eu-central-1.compute.amazonaws.com:8080/login', json=payload,
+            #                   headers=headers)
             print r
             self.command_exit()
         else:
@@ -237,16 +237,18 @@ class PlayerFrame(Frame):
 
     def command_nuova_partita(self):
         nemo = True
-        routeThr = RouteThread()
-        routeThr.start()
-        while nemo:
-            payload = {'user': 'alex', 'addr': '127.0.0.1'}
-            print payload
-            headers = {'content_length': 'payload_len', 'content-type': 'application/json'}
-            r = requests.post('http://localhost:8080/newgame', json=payload, headers=headers)
-            if(r.status_code== 200):
-                nemo = False
-            print r.headers
+        # routeThr = RouteThread()
+        # routeThr.start()
+        # while nemo:
+        payload = {'user': 'alex', 'addr': '127.0.0.1'}
+        print payload
+        headers = {'content_length': 'payload_len', 'content-type': 'application/json'}
+        r = requests.post('http://localhost:8181/generate', json=payload, headers=headers)
+        # print r.text
+        print r.json()
+        if(r.status_code== 200):
+            nemo = False
+        print r.headers
 
 
 
